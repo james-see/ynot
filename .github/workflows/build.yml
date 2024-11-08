@@ -62,11 +62,16 @@ jobs:
         # Create zip for notarization
         ditto -c -k --keepParent "dist/YNOT.app" dist/YNOT.zip
         
-        # Submit for notarization and wait
-        xcrun notarytool submit dist/YNOT.zip --apple-id ${{ secrets.APPLE_ID }} --password ${{ secrets.APPLE_PASSWORD }} --team-id ${{ secrets.APPLE_TEAM_ID }} --wait
+        # Submit for notarization using altool
+        xcrun altool --notarize-app \
+          --primary-bundle-id "com.ynot.app" \
+          --username "${{ secrets.APPLE_ID }}" \
+          --password "${{ secrets.APPLE_PASSWORD }}" \
+          --team-id "${{ secrets.APPLE_TEAM_ID }}" \
+          --file dist/YNOT.zip
         
         # Wait and staple
-        sleep 60
+        sleep 120
         xcrun stapler staple "dist/YNOT.app"
         
         # Create final zip of stapled app
