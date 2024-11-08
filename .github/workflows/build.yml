@@ -35,8 +35,13 @@ jobs:
 
     - name: Build executable (macOS)
       if: matrix.os == 'macos-latest'
-      run: pyinstaller --onefile --name ynot main.py
-        
+      run: |
+        pyinstaller --onefile --name ynot main.py
+        codesign --force --sign - --timestamp --options runtime --entitlements entitlements.plist dist/ynot
+        ditto -c -k --keepParent dist/ynot dist/ynot.zip
+        xcrun notarytool submit dist/ynot.zip --apple-id ${{ secrets.APPLE_ID }} --password ${{ secrets.APPLE_PASSWORD }} --team-id ${{ secrets.APPLE_TEAM_ID }} --wait
+        xcrun stapler staple dist/ynot
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
