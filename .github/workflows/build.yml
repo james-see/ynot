@@ -48,15 +48,15 @@ jobs:
         security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k temppass build.keychain
 
         # Build and sign
-        pyinstaller --onefile --name ynot main.py
-        codesign --force --options runtime --entitlements entitlements.plist --sign "Developer ID Application" dist/ynot
-        ditto -c -k --keepParent dist/ynot dist/ynot.zip
-        xcrun notarytool submit dist/ynot.zip --apple-id ${{ secrets.APPLE_ID }} --password ${{ secrets.APPLE_PASSWORD }} --team-id ${{ secrets.APPLE_TEAM_ID }} --wait
+        pyinstaller --onefile --windowed --name YNOT --clean main.py
+        codesign --force --options runtime --entitlements entitlements.plist --sign "Developer ID Application" "dist/YNOT.app"
+        ditto -c -k --keepParent "dist/YNOT.app" dist/YNOT.zip
+        xcrun notarytool submit dist/YNOT.zip --apple-id ${{ secrets.APPLE_ID }} --password ${{ secrets.APPLE_PASSWORD }} --team-id ${{ secrets.APPLE_TEAM_ID }} --wait
         
         # Wait for notarization to propagate and retry stapling if needed
         sleep 30
         for i in {1..3}; do
-          if xcrun stapler staple dist/ynot; then
+          if xcrun stapler staple "dist/YNOT.app"; then
             break
           fi
           echo "Stapling attempt $i failed, waiting before retry..."
