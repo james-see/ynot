@@ -54,7 +54,7 @@ jobs:
         find "dist/YNOT.app/Contents/MacOS" -type f -exec codesign --force --options runtime --entitlements entitlements.plist --sign "Developer ID Application" {} \;
         
         # Sign the .app bundle itself
-        codesign --force --options runtime --entitlements entitlements.plist --sign "Developer ID Application" "dist/YNOT.app"
+        codesign --force --options runtime --entitlements entitlements.plist --sign "Developer ID Application" --timestamp --deep --strict "dist/YNOT.app"
         
         # Verify signing
         codesign --verify --deep --strict --verbose=2 "dist/YNOT.app"
