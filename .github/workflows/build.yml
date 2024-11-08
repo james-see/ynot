@@ -48,20 +48,29 @@ jobs:
         security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k temppass build.keychain
 
         # Build and sign
-        pyinstaller --onefile --windowed --name YNOT --clean --icon icon.icns main.py
+        pyinstaller --windowed --name YNOT --clean --icon icon.icns --target-architecture universal2 main.py
+        
+        # Sign all binaries inside the .app bundle
+        find "dist/YNOT.app/Contents/MacOS" -type f -exec codesign --force --options runtime --entitlements entitlements.plist --sign "Developer ID Application" {} \;
+        
+        # Sign the .app bundle itself
         codesign --force --options runtime --entitlements entitlements.plist --sign "Developer ID Application" "dist/YNOT.app"
+        
+        # Verify signing
+        codesign --verify --deep --strict --verbose=2 "dist/YNOT.app"
+        
+        # Create zip for notarization
         ditto -c -k --keepParent "dist/YNOT.app" dist/YNOT.zip
+        
+        # Submit for notarization and wait
         xcrun notarytool submit dist/YNOT.zip --apple-id ${{ secrets.APPLE_ID }} --password ${{ secrets.APPLE_PASSWORD }} --team-id ${{ secrets.APPLE_TEAM_ID }} --wait
         
-        # Wait for notarization to propagate and retry stapling if needed
-        sleep 30
-        for i in {1..3}; do
-          if xcrun stapler staple "dist/YNOT.app"; then
-            break
-          fi
-          echo "Stapling attempt $i failed, waiting before retry..."
-          sleep 30
-        done
+        # Wait and staple
+        sleep 60
+        xcrun stapler staple "dist/YNOT.app"
+        
+        # Create final zip of stapled app
+        ditto -c -k --keepParent "dist/YNOT.app" dist/YNOT.zip
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
