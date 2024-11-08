@@ -62,16 +62,34 @@ jobs:
         # Create zip for notarization
         ditto -c -k --keepParent "dist/YNOT.app" dist/YNOT.zip
         
-        # Submit for notarization using altool
-        xcrun altool --notarize-app \
-          --primary-bundle-id "com.ynot.app" \
-          --username "${{ secrets.APPLE_ID }}" \
+        # Submit for notarization
+        SUBMISSION_ID=$(xcrun notarytool submit dist/YNOT.zip \
+          --apple-id "${{ secrets.APPLE_ID }}" \
           --password "${{ secrets.APPLE_PASSWORD }}" \
           --team-id "${{ secrets.APPLE_TEAM_ID }}" \
-          --file dist/YNOT.zip
+          --no-progress \
+          --output-format json | jq -r '.id')
+          
+        # Wait for notarization to complete
+        while true; do
+          STATUS=$(xcrun notarytool info "$SUBMISSION_ID" \
+            --apple-id "${{ secrets.APPLE_ID }}" \
+            --password "${{ secrets.APPLE_PASSWORD }}" \
+            --team-id "${{ secrets.APPLE_TEAM_ID }}" \
+            --output-format json | jq -r '.status')
+          
+          if [ "$STATUS" = "Accepted" ]; then
+            break
+          elif [ "$STATUS" = "Invalid" ] || [ "$STATUS" = "Rejected" ]; then
+            echo "Notarization failed with status: $STATUS"
+            exit 1
+          fi
+          
+          echo "Waiting for notarization... Current status: $STATUS"
+          sleep 30
+        done
         
-        # Wait and staple
-        sleep 120
+        # Staple the notarization
         xcrun stapler staple "dist/YNOT.app"
         
         # Create final zip of stapled app
