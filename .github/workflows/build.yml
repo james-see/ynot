@@ -52,7 +52,16 @@ jobs:
         codesign --force --options runtime --entitlements entitlements.plist --sign "Developer ID Application" dist/ynot
         ditto -c -k --keepParent dist/ynot dist/ynot.zip
         xcrun notarytool submit dist/ynot.zip --apple-id ${{ secrets.APPLE_ID }} --password ${{ secrets.APPLE_PASSWORD }} --team-id ${{ secrets.APPLE_TEAM_ID }} --wait
-        xcrun stapler staple dist/ynot
+        
+        # Wait for notarization to propagate and retry stapling if needed
+        sleep 30
+        for i in {1..3}; do
+          if xcrun stapler staple dist/ynot; then
+            break
+          fi
+          echo "Stapling attempt $i failed, waiting before retry..."
+          sleep 30
+        done
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
