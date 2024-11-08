@@ -11,6 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest]
+        python-version: ['3.11']
         
     steps:
     - uses: actions/checkout@v2
@@ -18,12 +19,12 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: ${{ matrix.python-version }}
         
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pyinstaller yt-dlp tkinter
+        pip install pyinstaller yt-dlp
         
     - name: Build executable
       run: pyinstaller --onefile --windowed --name ynot main.py
@@ -35,4 +36,4 @@ jobs:
         files: |
           dist/ynot*
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
