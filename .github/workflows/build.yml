@@ -31,7 +31,7 @@ jobs:
 
     - name: Build executable (Windows)
       if: matrix.os == 'windows-latest'
-      run: pyinstaller --onefile --windowed --name ynot main.py
+      run: pyinstaller --onefile --windowed --name YNOT --clean main.py
 
     - name: Build executable (macOS)
       if: matrix.os == 'macos-latest'
@@ -69,5 +69,6 @@ jobs:
       with:
         files: |
           dist/ynot*
+          dist/YNOT*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
