@@ -35,9 +35,21 @@ jobs:
 
     - name: Build executable (macOS)
       if: matrix.os == 'macos-latest'
+      env:
+        CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE }}
+        CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
       run: |
+        # Decode and import certificate
+        echo $CERTIFICATE_BASE64 | base64 --decode > certificate.p12
+        security create-keychain -p temppass build.keychain
+        security default-keychain -s build.keychain
+        security unlock-keychain -p temppass build.keychain
+        security import certificate.p12 -k build.keychain -P $CERTIFICATE_PASSWORD -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k temppass build.keychain
+
+        # Build and sign
         pyinstaller --onefile --name ynot main.py
-        codesign --force --sign - --timestamp --options runtime --entitlements entitlements.plist dist/ynot
+        codesign --force --options runtime --entitlements entitlements.plist --sign "Developer ID Application" dist/ynot
         ditto -c -k --keepParent dist/ynot dist/ynot.zip
         xcrun notarytool submit dist/ynot.zip --apple-id ${{ secrets.APPLE_ID }} --password ${{ secrets.APPLE_PASSWORD }} --team-id ${{ secrets.APPLE_TEAM_ID }} --wait
         xcrun stapler staple dist/ynot
