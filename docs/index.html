@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YNOT - YouTube Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo img {
+            width: 120px;
+            height: 120px;
+            border-radius: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .tagline {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .download-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .download-section h2 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .download-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .download-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-size: 1.1em;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .download-btn.recommended {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.3);
+        }
+
+        .download-btn.recommended:hover {
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .download-btn .icon {
+            font-size: 1.5em;
+            margin-right: 15px;
+        }
+
+        .download-btn .left {
+            display: flex;
+            align-items: center;
+        }
+
+        .download-btn .badge {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+
+        .features {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .features h3 {
+            margin-bottom: 15px;
+        }
+
+        .features ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .features li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .footer a:hover {
+            border-bottom-color: white;
+        }
+
+        .version {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .download-btn {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="https://raw.githubusercontent.com/james-see/ynot/main/ynot.png" alt="YNOT Logo">
+        </div>
+        
+        <h1>YNOT</h1>
+        <p class="tagline">Simple YouTube Downloader with GUI</p>
+
+        <div class="download-section">
+            <h2>Download for Your Platform</h2>
+            <div class="download-buttons" id="downloadButtons">
+                <p style="text-align: center;">Loading latest release...</p>
+            </div>
+            <p class="version" id="versionInfo"></p>
+        </div>
+
+        <div class="features">
+            <h3>Features</h3>
+            <ul>
+                <li>Simple and intuitive GUI interface</li>
+                <li>Download videos in best available quality</li>
+                <li>Cross-platform support (Linux, macOS, Windows)</li>
+                <li>Powered by yt-dlp</li>
+                <li>Free and open source</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>
+                <a href="https://github.com/james-see/ynot" target="_blank">View on GitHub</a> • 
+                <a href="https://github.com/james-see/ynot/issues" target="_blank">Report an Issue</a>
+            </p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Licensed under WTFPL</p>
+        </div>
+    </div>
+
+    <script>
+        // Detect user's OS
+        function detectOS() {
+            const userAgent = window.navigator.userAgent.toLowerCase();
+            const platform = window.navigator.platform.toLowerCase();
+            
+            if (platform.includes('mac') || userAgent.includes('mac')) {
+                return 'macos';
+            } else if (platform.includes('win') || userAgent.includes('win')) {
+                return 'windows';
+            } else if (platform.includes('linux') || userAgent.includes('linux')) {
+                return 'linux';
+            }
+            return 'unknown';
+        }
+
+        // Fetch latest release from GitHub API
+        async function loadLatestRelease() {
+            try {
+                const response = await fetch('https://api.github.com/repos/james-see/ynot/releases/latest');
+                const release = await response.json();
+                
+                const userOS = detectOS();
+                const assets = release.assets;
+                
+                const linuxAsset = assets.find(a => a.name.includes('AppImage'));
+                const macosAsset = assets.find(a => a.name.includes('macos.dmg'));
+                const windowsAsset = assets.find(a => a.name.endsWith('.exe'));
+                
+                let buttonsHTML = '';
+                
+                // Linux
+                if (linuxAsset) {
+                    const recommended = userOS === 'linux' ? ' recommended' : '';
+                    const badge = userOS === 'linux' ? '<span class="badge">Recommended</span>' : '';
+                    buttonsHTML += `
+                        <a href="${linuxAsset.browser_download_url}" class="download-btn${recommended}">
+                            <div class="left">
+                                <span class="icon">🐧</span>
+                                <div>
+                                    <strong>Linux</strong><br>
+                                    <small>${linuxAsset.name}</small>
+                                </div>
+                            </div>
+                            ${badge}
+                        </a>
+                    `;
+                }
+                
+                // macOS
+                if (macosAsset) {
+                    const recommended = userOS === 'macos' ? ' recommended' : '';
+                    const badge = userOS === 'macos' ? '<span class="badge">Recommended</span>' : '';
+                    buttonsHTML += `
+                        <a href="${macosAsset.browser_download_url}" class="download-btn${recommended}">
+                            <div class="left">
+                                <span class="icon">🍎</span>
+                                <div>
+                                    <strong>macOS</strong><br>
+                                    <small>${macosAsset.name}</small>
+                                </div>
+                            </div>
+                            ${badge}
+                        </a>
+                    `;
+                }
+                
+                // Windows
+                if (windowsAsset) {
+                    const recommended = userOS === 'windows' ? ' recommended' : '';
+                    const badge = userOS === 'windows' ? '<span class="badge">Recommended</span>' : '';
+                    buttonsHTML += `
+                        <a href="${windowsAsset.browser_download_url}" class="download-btn${recommended}">
+                            <div class="left">
+                                <span class="icon">🪟</span>
+                                <div>
+                                    <strong>Windows</strong><br>
+                                    <small>${windowsAsset.name}</small>
+                                </div>
+                            </div>
+                            ${badge}
+                        </a>
+                    `;
+                }
+                
+                document.getElementById('downloadButtons').innerHTML = buttonsHTML;
+                document.getElementById('versionInfo').textContent = `Latest version: ${release.tag_name}`;
+                
+            } catch (error) {
+                console.error('Error fetching release:', error);
+                document.getElementById('downloadButtons').innerHTML = `
+                    <p style="text-align: center;">
+                        Unable to load releases. Please visit 
+                        <a href="https://github.com/james-see/ynot/releases" style="color: #667eea;">GitHub Releases</a> 
+                        directly.
+                    </p>
+                `;
+            }
+        }
+
+        // Load releases on page load
+        loadLatestRelease();
+    </script>
+</body>
+</html>
+
