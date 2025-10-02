@@ -31,6 +31,9 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/james-see/ynot/main/ynot.png">
     
+    <!-- Google Search Console Verification (replace content with your verification code) -->
+    <!-- <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE"> -->
+    
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
     {
@@ -40,12 +43,13 @@
       "alternateName": "YNOT YouTube Downloader",
       "description": "A free, open-source YouTube downloader with a simple GUI interface",
       "url": "https://james-see.github.io/ynot/",
-      "applicationCategory": "MultimediaApplication",
+      "applicationCategory": "VideoDownloader",
       "operatingSystem": ["Windows", "macOS", "Linux"],
       "offers": {
         "@type": "Offer",
         "price": "0",
-        "priceCurrency": "USD"
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
       },
       "author": {
         "@type": "Person",
@@ -255,14 +259,15 @@
 <body>
     <div class="container">
         <div class="logo">
-            <img src="https://raw.githubusercontent.com/james-see/ynot/main/ynot.png" alt="YNOT YouTube Downloader - Free YouTube Video Downloader Logo" width="120" height="120">
+            <img src="https://raw.githubusercontent.com/james-see/ynot/main/ynot.png" alt="YNOT YouTube Downloader - Free YouTube Video Downloader Logo" width="120" height="120" loading="eager">
         </div>
         
-        <h1>YNOT</h1>
-        <p class="tagline">Free YouTube Video Downloader - Simple, Fast & Open Source</p>
+        <h1>Free, Open-Source YouTube Downloader – YNOT</h1>
+        <p class="tagline">Download YouTube Videos in HD & 4K on Windows, Mac, and Linux</p>
 
         <div class="download-section">
-            <h2>Download for Your Platform</h2>
+            <h2>Download YNOT for Windows, Mac, and Linux</h2>
+            <p style="text-align: center; margin-bottom: 20px; color: #555;">Choose your operating system to download the latest version of YNOT YouTube downloader</p>
             <div class="download-buttons" id="downloadButtons">
                 <p style="text-align: center;">Loading latest release...</p>
             </div>
@@ -270,7 +275,8 @@
         </div>
 
         <div class="features">
-            <h3>Why Choose YNOT YouTube Downloader?</h3>
+            <h2>Why Choose YNOT YouTube Downloader?</h2>
+            <p style="margin-bottom: 15px;">YNOT is a free, open-source YouTube video downloader that lets you grab HD and 4K videos on Windows, macOS, and Linux without ads or tracking. Here's what makes YNOT the best choice:</p>
             <ul>
                 <li>100% Free - No subscriptions, no hidden fees, completely free forever</li>
                 <li>Simple and intuitive GUI interface - Easy to use for everyone</li>
@@ -284,7 +290,7 @@
         </div>
 
         <div class="features">
-            <h3>How to Use YNOT</h3>
+            <h2>How to Download YouTube Videos with YNOT</h2>
             <ol style="list-style: decimal; padding-left: 30px;">
                 <li style="padding: 10px 0;">Download YNOT for your operating system (Windows, Mac, or Linux)</li>
                 <li style="padding: 10px 0;">Install and launch the application</li>
@@ -295,7 +301,7 @@
         </div>
 
         <div class="features">
-            <h3>Frequently Asked Questions</h3>
+            <h2>Frequently Asked Questions About YNOT YouTube Downloader</h2>
             <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 15px;">
                 <strong itemprop="name">Is YNOT really free?</strong>
                 <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
@@ -312,6 +318,18 @@
                 <strong itemprop="name">What platforms does YNOT support?</strong>
                 <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
                     <p itemprop="text">YNOT works on Windows, macOS, and Linux. We provide native builds for all major platforms.</p>
+                </div>
+            </div>
+            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 15px;">
+                <strong itemprop="name">Can I download 4K and HD videos?</strong>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <p itemprop="text">Yes! YNOT downloads videos in the best available quality, including HD (1080p) and 4K (2160p) when available from YouTube.</p>
+                </div>
+            </div>
+            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 15px;">
+                <strong itemprop="name">Do I need to install Python or other dependencies?</strong>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <p itemprop="text">No! YNOT comes as a standalone application with all dependencies bundled. Just download, install, and run.</p>
                 </div>
             </div>
         </div>
@@ -361,9 +379,9 @@
                     const recommended = userOS === 'linux' ? ' recommended' : '';
                     const badge = userOS === 'linux' ? '<span class="badge">Recommended</span>' : '';
                     buttonsHTML += `
-                        <a href="${linuxAsset.browser_download_url}" class="download-btn${recommended}">
+                        <a href="${linuxAsset.browser_download_url}" class="download-btn${recommended}" aria-label="Download YNOT for Linux - AppImage" title="Download YNOT YouTube Downloader for Linux">
                             <div class="left">
-                                <span class="icon">🐧</span>
+                                <span class="icon" aria-hidden="true">🐧</span>
                                 <div>
                                     <strong>Linux</strong><br>
                                     <small>${linuxAsset.name}</small>
@@ -379,9 +397,9 @@
                     const recommended = userOS === 'macos' ? ' recommended' : '';
                     const badge = userOS === 'macos' ? '<span class="badge">Recommended</span>' : '';
                     buttonsHTML += `
-                        <a href="${macosAsset.browser_download_url}" class="download-btn${recommended}">
+                        <a href="${macosAsset.browser_download_url}" class="download-btn${recommended}" aria-label="Download YNOT for macOS - DMG" title="Download YNOT YouTube Downloader for macOS">
                             <div class="left">
-                                <span class="icon">🍎</span>
+                                <span class="icon" aria-hidden="true">🍎</span>
                                 <div>
                                     <strong>macOS</strong><br>
                                     <small>${macosAsset.name}</small>
@@ -397,9 +415,9 @@
                     const recommended = userOS === 'windows' ? ' recommended' : '';
                     const badge = userOS === 'windows' ? '<span class="badge">Recommended</span>' : '';
                     buttonsHTML += `
-                        <a href="${windowsAsset.browser_download_url}" class="download-btn${recommended}">
+                        <a href="${windowsAsset.browser_download_url}" class="download-btn${recommended}" aria-label="Download YNOT for Windows - EXE" title="Download YNOT YouTube Downloader for Windows">
                             <div class="left">
-                                <span class="icon">🪟</span>
+                                <span class="icon" aria-hidden="true">🪟</span>
                                 <div>
                                     <strong>Windows</strong><br>
                                     <small>${windowsAsset.name}</small>
