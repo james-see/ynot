@@ -121,7 +121,7 @@ jobs:
       
       - name: Build Windows executable
         run: |
-          pyinstaller --onefile --windowed --name ynot --icon ynot.png main.py
+          pyinstaller --onefile --windowed --name ynot --icon ynot.ico main.py
       
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
