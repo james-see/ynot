@@ -26,8 +26,10 @@ jobs:
         run: |
           pyinstaller --onefile --windowed --name ynot --icon ynot.png main.py
       
-      - name: Download AppImage tools
+      - name: Install FUSE and download AppImage tools
         run: |
+          sudo apt-get update
+          sudo apt-get install -y libfuse2
           wget -O appimagetool "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
           chmod +x appimagetool
       
