@@ -90,7 +90,7 @@ jobs:
       
       - name: Build macOS app
         run: |
-          pyinstaller --onefile --windowed --name ynot --icon icon.icns main.py
+          pyinstaller --windowed --name ynot --icon icon.icns main.py
       
       - name: Create DMG
         run: |
