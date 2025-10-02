@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://james-see.github.io/ynot/sitemap.xml
+
