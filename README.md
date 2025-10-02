@@ -7,6 +7,34 @@ This project is licensed under the WTFPL license- see the LICENSE file for detai
 
 A simple YT downloader with a GUI interface.
 
+## Installation
+
+### Pre-built Releases
+
+Download the latest release for your platform:
+
+- **Linux**: Download `ynot-x86_64.AppImage`, make it executable (`chmod +x ynot-x86_64.AppImage`), and run it
+- **macOS**: Download `ynot-macos.dmg`, open it, and drag YNOT to Applications
+- **Windows**: Download `ynot.exe` and run it
+
+### From Source
+
+```bash
+pip install -r requirements.txt
+python main.py
+```
+
+## Building
+
+The project uses GitHub Actions to automatically build releases for Linux (AppImage), macOS (DMG), and Windows (EXE).
+
+To build locally:
+
+```bash
+pip install pyinstaller yt-dlp
+pyinstaller --onefile --windowed --name ynot main.py
+```
+
 ## License
 
 ![WTFPL](http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-4.png)

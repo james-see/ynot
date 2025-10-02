@@ -1,106 +1,148 @@
-name: Build YNOT
+name: Build and Release
 
 on:
   push:
     tags:
       - 'v*'
-
-permissions:
-  contents: write
+  workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, windows-latest]
-        python-version: ['3.11']
-        
+  build-linux:
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pyinstaller yt-dlp
-
-    - name: Build executable (Windows)
-      if: matrix.os == 'windows-latest'
-      run: pyinstaller --onefile --windowed --name YNOT --clean main.py
-
-    - name: Build executable (macOS)
-      if: matrix.os == 'macos-latest'
-      env:
-        CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE }}
-        CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-      run: |
-        # Decode and import certificate
-        echo $CERTIFICATE_BASE64 | base64 --decode > certificate.p12
-        security create-keychain -p temppass build.keychain
-        security default-keychain -s build.keychain
-        security unlock-keychain -p temppass build.keychain
-        security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k temppass build.keychain
-
-        # Build and sign
-        pyinstaller --windowed --name YNOT --clean --icon icon.icns --target-architecture universal2 main.py
-        
-        # Sign all binaries inside the .app bundle
-        find "dist/YNOT.app/Contents/MacOS" -type f -exec codesign --force --options runtime --entitlements entitlements.plist --sign "Developer ID Application" {} \;
-        
-        # Sign the .app bundle itself
-        codesign --force --options runtime --entitlements entitlements.plist --sign "Developer ID Application" --timestamp --deep --strict "dist/YNOT.app"
-        
-        # Verify signing
-        codesign --verify --deep --strict --verbose=2 "dist/YNOT.app"
-        
-        # Create zip for notarization
-        ditto -c -k --keepParent "dist/YNOT.app" dist/YNOT.zip
-        
-        # Submit for notarization
-        SUBMISSION_ID=$(xcrun notarytool submit dist/YNOT.zip \
-          --apple-id "${{ secrets.APPLE_ID }}" \
-          --password "${{ secrets.APPLE_PASSWORD }}" \
-          --team-id "${{ secrets.APPLE_TEAM_ID }}" \
-          --no-progress \
-          --output-format json | jq -r '.id')
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller yt-dlp
+      
+      - name: Build Linux executable
+        run: |
+          pyinstaller --onefile --windowed --name ynot --icon ynot.png main.py
+      
+      - name: Download AppImage tools
+        run: |
+          wget -O appimagetool "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+          chmod +x appimagetool
+      
+      - name: Create AppImage structure
+        run: |
+          mkdir -p ynot.AppDir/usr/bin
+          mkdir -p ynot.AppDir/usr/share/applications
+          mkdir -p ynot.AppDir/usr/share/icons/hicolor/512x512/apps
+          cp dist/ynot ynot.AppDir/usr/bin/
+          cp ynot.png ynot.AppDir/usr/share/icons/hicolor/512x512/apps/ynot.png
+          cp ynot.png ynot.AppDir/ynot.png
           
-        # Wait for notarization to complete
-        while true; do
-          STATUS=$(xcrun notarytool info "$SUBMISSION_ID" \
-            --apple-id "${{ secrets.APPLE_ID }}" \
-            --password "${{ secrets.APPLE_PASSWORD }}" \
-            --team-id "${{ secrets.APPLE_TEAM_ID }}" \
-            --output-format json | jq -r '.status')
+          cat > ynot.AppDir/ynot.desktop << EOF
+          [Desktop Entry]
+          Name=YNOT
+          Exec=ynot
+          Icon=ynot
+          Type=Application
+          Categories=Utility;
+          EOF
           
-          if [ "$STATUS" = "Accepted" ]; then
-            break
-          elif [ "$STATUS" = "Invalid" ] || [ "$STATUS" = "Rejected" ]; then
-            echo "Notarization failed with status: $STATUS"
-            exit 1
-          fi
+          cat > ynot.AppDir/AppRun << 'EOF'
+          #!/bin/bash
+          SELF=$(readlink -f "$0")
+          HERE=${SELF%/*}
+          export PATH="${HERE}/usr/bin:${PATH}"
+          exec "${HERE}/usr/bin/ynot" "$@"
+          EOF
           
-          echo "Waiting for notarization... Current status: $STATUS"
-          sleep 30
-        done
-        
-        # Staple the notarization
-        xcrun stapler staple "dist/YNOT.app"
-        
-        # Create final zip of stapled app
-        ditto -c -k --keepParent "dist/YNOT.app" dist/YNOT.zip
+          chmod +x ynot.AppDir/AppRun
+      
+      - name: Build AppImage
+        run: |
+          ARCH=x86_64 ./appimagetool ynot.AppDir ynot-x86_64.AppImage
+      
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: |
+            ynot-x86_64.AppImage
+            dist/ynot
 
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: |
-          dist/ynot*
-          dist/YNOT*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller yt-dlp
+      
+      - name: Build macOS app
+        run: |
+          pyinstaller --onefile --windowed --name ynot --icon icon.icns main.py
+      
+      - name: Create DMG
+        run: |
+          mkdir -p dist/dmg
+          cp -r dist/ynot.app dist/dmg/
+          hdiutil create -volname "YNOT" -srcfolder dist/dmg -ov -format UDZO dist/ynot-macos.dmg
+      
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: dist/ynot-macos.dmg
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller yt-dlp
+      
+      - name: Build Windows executable
+        run: |
+          pyinstaller --onefile --windowed --name ynot --icon ynot.png main.py
+      
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: dist/ynot.exe
+
+  release:
+    needs: [build-linux, build-macos, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            linux-build/ynot-x86_64.AppImage
+            macos-build/ynot-macos.dmg
+            windows-build/ynot.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
