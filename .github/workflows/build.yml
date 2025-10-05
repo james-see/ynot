@@ -23,11 +23,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller yt-dlp
+          pip install pyinstaller yt-dlp certifi
       
       - name: Build Linux executable
         run: |
-          pyinstaller --onefile --windowed --name ynot --icon ynot.png main.py
+          pyinstaller --onefile --windowed --name ynot --icon ynot.png --hidden-import certifi main.py
       
       - name: Install FUSE and download AppImage tools
         run: |
@@ -89,11 +89,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller yt-dlp
+          pip install pyinstaller yt-dlp certifi
       
       - name: Build macOS app
         run: |
-          pyinstaller --windowed --name ynot --icon icon.icns main.py
+          pyinstaller --windowed --name ynot --icon icon.icns --hidden-import certifi main.py
       
       - name: Create DMG
         run: |
@@ -120,11 +120,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller yt-dlp
+          pip install pyinstaller yt-dlp certifi
       
       - name: Build Windows executable
         run: |
-          pyinstaller --onefile --windowed --name ynot --icon ynot.ico main.py
+          pyinstaller --onefile --windowed --name ynot --icon ynot.ico --hidden-import certifi main.py
       
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
