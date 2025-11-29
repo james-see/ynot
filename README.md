@@ -6,6 +6,14 @@ A simple YT downloader with a GUI interface.
 
 **[📥 Download for your platform](https://james-see.github.io/ynot/)**
 
+## Features
+
+- Download videos from YouTube
+- Download transcripts only (no video)
+- Option to include transcript with video download
+
+All files are saved to your home directory (`~/`).
+
 ## Installation
 
 ### Pre-built Releases
