@@ -23,11 +23,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller yt-dlp certifi
+          pip install pyinstaller yt-dlp certifi youtube-transcript-api
       
       - name: Build Linux executable
         run: |
-          pyinstaller --onefile --windowed --name ynot --icon ynot.png --hidden-import certifi main.py
+          pyinstaller --onefile --windowed --name ynot --icon ynot.png --hidden-import certifi --hidden-import youtube_transcript_api main.py
       
       - name: Install FUSE and download AppImage tools
         run: |
@@ -89,7 +89,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller yt-dlp certifi
+          pip install pyinstaller yt-dlp certifi youtube-transcript-api
       
       - name: Build macOS app
         run: |
@@ -158,11 +158,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller yt-dlp certifi
+          pip install pyinstaller yt-dlp certifi youtube-transcript-api
       
       - name: Build Windows executable
         run: |
-          pyinstaller --onefile --windowed --name ynot --icon ynot.ico --hidden-import certifi main.py
+          pyinstaller --onefile --windowed --name ynot --icon ynot.ico --hidden-import certifi --hidden-import youtube_transcript_api main.py
       
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4

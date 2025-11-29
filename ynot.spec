@@ -10,6 +10,7 @@ a = Analysis(
     hiddenimports=[
         'yt_dlp',
         'certifi',
+        'youtube_transcript_api',
     ],
     hookspath=[],
     hooksconfig={},
@@ -60,8 +61,8 @@ app = BUNDLE(
     info_plist={
         'CFBundleName': 'YNOT',
         'CFBundleDisplayName': 'YNOT',
-        'CFBundleVersion': '0.4.0',
-        'CFBundleShortVersionString': '0.4.0',
+        'CFBundleVersion': '0.5.1',
+        'CFBundleShortVersionString': '0.5.1',
         'NSHighResolutionCapable': True,
         'NSRequiresAquaSystemAppearance': False,
         'LSMinimumSystemVersion': '10.13.0',
