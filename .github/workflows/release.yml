@@ -1,0 +1,191 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller yt-dlp certifi
+      
+      - name: Build Linux executable
+        run: |
+          pyinstaller --onefile --windowed --name ynot --icon ynot.png --hidden-import certifi main.py
+      
+      - name: Install FUSE and download AppImage tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfuse2
+          wget -O appimagetool "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+          chmod +x appimagetool
+      
+      - name: Create AppImage structure
+        run: |
+          mkdir -p ynot.AppDir/usr/bin
+          mkdir -p ynot.AppDir/usr/share/applications
+          mkdir -p ynot.AppDir/usr/share/icons/hicolor/512x512/apps
+          cp dist/ynot ynot.AppDir/usr/bin/
+          cp ynot.png ynot.AppDir/usr/share/icons/hicolor/512x512/apps/ynot.png
+          cp ynot.png ynot.AppDir/ynot.png
+          
+          cat > ynot.AppDir/ynot.desktop << EOF
+          [Desktop Entry]
+          Name=YNOT
+          Exec=ynot
+          Icon=ynot
+          Type=Application
+          Categories=Utility;
+          EOF
+          
+          cat > ynot.AppDir/AppRun << 'EOF'
+          #!/bin/bash
+          SELF=$(readlink -f "$0")
+          HERE=${SELF%/*}
+          export PATH="${HERE}/usr/bin:${PATH}"
+          exec "${HERE}/usr/bin/ynot" "$@"
+          EOF
+          
+          chmod +x ynot.AppDir/AppRun
+      
+      - name: Build AppImage
+        run: |
+          ARCH=x86_64 ./appimagetool ynot.AppDir ynot-x86_64.AppImage
+      
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: |
+            ynot-x86_64.AppImage
+            dist/ynot
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller yt-dlp certifi
+      
+      - name: Build macOS app
+        run: |
+          pyinstaller --clean --noconfirm ynot.spec
+      
+      - name: Import signing certificate
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE }}
+          CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        run: |
+          echo "$CERTIFICATE_BASE64" | base64 --decode > certificate.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+          rm certificate.p12
+      
+      - name: Sign app
+        run: |
+          IDENTITY=$(security find-identity -v -p codesigning build.keychain | grep "Developer ID Application" | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          echo "Using identity: $IDENTITY"
+          find dist/ynot.app -type f \( -name "*.dylib" -o -name "*.so" \) -exec codesign --force --options runtime --timestamp --entitlements entitlements.plist --sign "$IDENTITY" {} \; 2>/dev/null || true
+          codesign --force --deep --options runtime --timestamp --entitlements entitlements.plist --sign "$IDENTITY" dist/ynot.app
+          codesign --verify --deep --strict dist/ynot.app
+      
+      - name: Create DMG
+        run: |
+          mkdir -p dist/dmg_temp
+          cp -R dist/ynot.app dist/dmg_temp/
+          ln -s /Applications dist/dmg_temp/Applications
+          hdiutil create -volname "ynot" -srcfolder dist/dmg_temp -ov -format UDZO dist/ynot-macos.dmg
+          rm -rf dist/dmg_temp
+          IDENTITY=$(security find-identity -v -p codesigning build.keychain | grep "Developer ID Application" | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          codesign --force --sign "$IDENTITY" dist/ynot-macos.dmg
+      
+      - name: Notarize DMG
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          xcrun notarytool submit dist/ynot-macos.dmg \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+          xcrun stapler staple dist/ynot-macos.dmg
+      
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: dist/ynot-macos.dmg
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller yt-dlp certifi
+      
+      - name: Build Windows executable
+        run: |
+          pyinstaller --onefile --windowed --name ynot --icon ynot.ico --hidden-import certifi main.py
+      
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: dist/ynot.exe
+
+  release:
+    needs: [build-linux, build-macos, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            linux-build/ynot-x86_64.AppImage
+            macos-build/ynot-macos.dmg
+            windows-build/ynot.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
