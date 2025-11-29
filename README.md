@@ -16,6 +16,13 @@ All files are saved to your home directory (`~/`).
 
 ## Installation
 
+### Homebrew (macOS)
+
+```bash
+brew tap james-see/tap
+brew install --cask ynot
+```
+
 ### Pre-built Releases
 
 Download the latest release for your platform:

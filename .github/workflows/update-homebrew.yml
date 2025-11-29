@@ -1,0 +1,61 @@
+name: Update Homebrew Cask
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-cask:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for release assets
+        run: sleep 60
+
+      - name: Get release info
+        id: release
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Updating to version $VERSION"
+
+      - name: Download DMG and calculate SHA256
+        id: sha
+        run: |
+          curl -sL "https://github.com/james-see/ynot/releases/download/v${{ steps.release.outputs.version }}/ynot-macos.dmg" -o ynot-macos.dmg
+          SHA256=$(shasum -a 256 ynot-macos.dmg | awk '{print $1}')
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "SHA256: $SHA256"
+
+      - name: Clone homebrew-tap
+        run: |
+          git clone https://x-access-token:${{ secrets.HOMEBREW_TAP_TOKEN }}@github.com/james-see/homebrew-tap.git
+
+      - name: Update cask formula
+        run: |
+          cat > homebrew-tap/Casks/ynot.rb << 'CASK_EOF'
+          cask "ynot" do
+            version "${{ steps.release.outputs.version }}"
+            sha256 "${{ steps.sha.outputs.sha256 }}"
+
+            url "https://github.com/james-see/ynot/releases/download/v#{version}/ynot-macos.dmg"
+            name "YNOT"
+            desc "Simple YouTube video and transcript downloader"
+            homepage "https://james-see.github.io/ynot/"
+
+            app "YNOT.app"
+
+            zap trash: [
+              "~/Library/Preferences/com.ynot.plist",
+              "~/Library/Saved Application State/com.ynot.savedState",
+            ]
+          end
+          CASK_EOF
+
+      - name: Commit and push
+        run: |
+          cd homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/ynot.rb
+          git commit -m "Update ynot to v${{ steps.release.outputs.version }}"
+          git push
