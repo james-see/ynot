@@ -4,6 +4,7 @@ import yt_dlp
 import os
 import re
 import subprocess
+import tempfile
 from youtube_transcript_api import YouTubeTranscriptApi
 
 
@@ -76,6 +77,70 @@ class YnotGui:
         if self.saved_filepath and os.path.exists(self.saved_filepath):
             subprocess.run(["open", "-R", self.saved_filepath])
 
+    def convert_to_proper_mp4(self, input_file):
+        """Convert MPEG-TS stream to proper MP4 container using two-step process."""
+        try:
+            # Create temp file for intermediate TS
+            with tempfile.NamedTemporaryFile(suffix=".ts", delete=False) as tmp:
+                temp_ts = tmp.name
+
+            # Step 1: Convert to proper TS format
+            subprocess.run(
+                [
+                    "ffmpeg",
+                    "-y",
+                    "-i",
+                    input_file,
+                    "-map",
+                    "0:v:0",
+                    "-map",
+                    "0:a:0",
+                    "-c:v",
+                    "copy",
+                    "-c:a",
+                    "copy",
+                    "-bsf:v",
+                    "h264_mp4toannexb",
+                    "-f",
+                    "mpegts",
+                    temp_ts,
+                ],
+                check=True,
+                capture_output=True,
+            )
+
+            # Step 2: Convert TS to proper MP4
+            subprocess.run(
+                [
+                    "ffmpeg",
+                    "-y",
+                    "-i",
+                    temp_ts,
+                    "-map",
+                    "0:v:0",
+                    "-map",
+                    "0:a:0",
+                    "-c:v",
+                    "copy",
+                    "-c:a",
+                    "copy",
+                    "-bsf:v",
+                    "h264_metadata=aud=insert",
+                    "-movflags",
+                    "+faststart",
+                    input_file,
+                ],
+                check=True,
+                capture_output=True,
+            )
+
+            # Clean up temp file
+            os.unlink(temp_ts)
+            return True
+        except Exception as e:
+            print(f"Conversion error: {e}")
+            return False
+
     def save_transcript(self, video_id, title):
         """Fetch and save transcript to file."""
         home_dir = os.path.expanduser("~")
@@ -119,6 +184,11 @@ class YnotGui:
                 # Get final filename (after remux, extension will be .mp4)
                 filename = ydl.prepare_filename(info)
                 filename = os.path.splitext(filename)[0] + ".mp4"
+
+            # Convert to proper MP4 format
+            self.progress_label.config(text="Converting to proper MP4...")
+            self.root.update()
+            self.convert_to_proper_mp4(filename)
 
             # Also download transcript if checkbox is checked
             if self.include_transcript_var.get():
