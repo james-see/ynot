@@ -1,0 +1,39 @@
+# Build artifacts
+build/
+dist/
+*.app
+*.dmg
+*.zip
+*.spec.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+
+# Environment files (contain secrets!)
+.env
+*.p8
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
