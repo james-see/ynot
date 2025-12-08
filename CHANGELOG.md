@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.1] - 2024-12-08
+
+### Fixed
+- Fixed FFmpegVideoRemuxer parameter typo (prefformat -> preferedformat)
+
 ## [0.6.0] - 2024-12-08
 
 ### Fixed
