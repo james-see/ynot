@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.2] - 2025-12-08
+
+### Fixed
+- Properly convert MPEG-TS streams to MP4 using two-step ffmpeg process for Final Cut Pro compatibility
+
+### Added
+- ffmpeg availability check with installation instructions
+
 ## [0.6.1] - 2025-12-08
 
 ### Fixed

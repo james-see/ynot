@@ -13,6 +13,9 @@ class YnotGui:
         self.root = root
         self.root.title("YNOT")
 
+        # Check for ffmpeg on startup
+        self.check_ffmpeg()
+
         # Main frame
         self.frame = ttk.Frame(root, padding="10")
         self.frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
@@ -58,6 +61,31 @@ class YnotGui:
         self.file_link.grid(row=4, column=0, columnspan=2, pady=5)
         self.file_link.bind("<Button-1>", self.open_file_location)
         self.saved_filepath = None
+
+    def check_ffmpeg(self):
+        """Check if ffmpeg is installed and show instructions if not."""
+        try:
+            subprocess.run(
+                ["ffmpeg", "-version"], check=True, capture_output=True, timeout=5
+            )
+        except (
+            subprocess.CalledProcessError,
+            FileNotFoundError,
+            subprocess.TimeoutExpired,
+        ):
+            message = (
+                "ffmpeg is required but not found on your system.\n\n"
+                "Installation instructions:\n\n"
+                "macOS:\n"
+                "  brew install ffmpeg\n\n"
+                "Linux:\n"
+                "  sudo apt install ffmpeg  (Debian/Ubuntu)\n"
+                "  sudo dnf install ffmpeg  (Fedora)\n\n"
+                "Windows:\n"
+                "  Download from ffmpeg.org and add to PATH\n\n"
+                "The app will continue but video conversion may fail."
+            )
+            messagebox.showwarning("ffmpeg Not Found", message)
 
     def extract_video_id(self, url):
         """Extract video ID from YouTube URL."""
