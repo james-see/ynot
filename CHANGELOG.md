@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.3] - 2025-12-08
+
+### Fixed
+- Fixed ffmpeg detection in bundled app by checking common installation paths (Homebrew, system)
+- ffmpeg path is now properly resolved and used for conversions
+
 ## [0.6.2] - 2025-12-08
 
 ### Fixed

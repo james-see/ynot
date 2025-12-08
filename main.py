@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import tempfile
+import shutil
 from youtube_transcript_api import YouTubeTranscriptApi
 
 
@@ -64,15 +65,24 @@ class YnotGui:
 
     def check_ffmpeg(self):
         """Check if ffmpeg is installed and show instructions if not."""
-        try:
-            subprocess.run(
-                ["ffmpeg", "-version"], check=True, capture_output=True, timeout=5
-            )
-        except (
-            subprocess.CalledProcessError,
-            FileNotFoundError,
-            subprocess.TimeoutExpired,
-        ):
+        # Common ffmpeg installation paths
+        common_paths = [
+            "/opt/homebrew/bin",  # Homebrew on Apple Silicon
+            "/usr/local/bin",  # Homebrew on Intel Mac
+            "/usr/bin",  # System install
+            "/bin",  # Alternative system path
+        ]
+
+        # Add common paths to search
+        search_path = os.environ.get("PATH", "")
+        for path in common_paths:
+            if path not in search_path:
+                search_path = f"{path}:{search_path}"
+
+        # Try to find ffmpeg
+        ffmpeg_path = shutil.which("ffmpeg", path=search_path)
+
+        if not ffmpeg_path:
             message = (
                 "ffmpeg is required but not found on your system.\n\n"
                 "Installation instructions:\n\n"
@@ -86,6 +96,9 @@ class YnotGui:
                 "The app will continue but video conversion may fail."
             )
             messagebox.showwarning("ffmpeg Not Found", message)
+        else:
+            # Store the ffmpeg path for later use
+            self.ffmpeg_path = ffmpeg_path
 
     def extract_video_id(self, url):
         """Extract video ID from YouTube URL."""
@@ -108,6 +121,9 @@ class YnotGui:
     def convert_to_proper_mp4(self, input_file):
         """Convert MPEG-TS stream to proper MP4 container using two-step process."""
         try:
+            # Use stored ffmpeg path or fallback to 'ffmpeg'
+            ffmpeg_cmd = getattr(self, "ffmpeg_path", "ffmpeg")
+
             # Create temp file for intermediate TS
             with tempfile.NamedTemporaryFile(suffix=".ts", delete=False) as tmp:
                 temp_ts = tmp.name
@@ -115,7 +131,7 @@ class YnotGui:
             # Step 1: Convert to proper TS format
             subprocess.run(
                 [
-                    "ffmpeg",
+                    ffmpeg_cmd,
                     "-y",
                     "-i",
                     input_file,
@@ -140,7 +156,7 @@ class YnotGui:
             # Step 2: Convert TS to proper MP4
             subprocess.run(
                 [
-                    "ffmpeg",
+                    ffmpeg_cmd,
                     "-y",
                     "-i",
                     temp_ts,
