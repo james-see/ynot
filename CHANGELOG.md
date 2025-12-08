@@ -1,11 +1,11 @@
 # Changelog
 
-## [0.6.1] - 2024-12-08
+## [0.6.1] - 2025-12-08
 
 ### Fixed
 - Fixed FFmpegVideoRemuxer parameter typo (prefformat -> preferedformat)
 
-## [0.6.0] - 2024-12-08
+## [0.6.0] - 2025-12-08
 
 ### Fixed
 - Fixed video downloads saving as MPEG-TS streams with incorrect .mp4 extension
