@@ -102,7 +102,7 @@ class YnotGui:
             "postprocessors": [
                 {
                     "key": "FFmpegVideoRemuxer",
-                    "prefformat": "mp4",
+                    "preferedformat": "mp4",
                 }
             ],
             "postprocessor_args": {"VideoRemuxer": ["-movflags", "+faststart"]},
