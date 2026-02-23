@@ -37,7 +37,7 @@ exe = EXE(
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
-    target_arch=None,
+    target_arch="universal2",
     codesign_identity=None,
     entitlements_file='entitlements.plist',
 )
@@ -61,8 +61,8 @@ app = BUNDLE(
     info_plist={
         'CFBundleName': 'YNOT',
         'CFBundleDisplayName': 'YNOT',
-        'CFBundleVersion': '0.5.1',
-        'CFBundleShortVersionString': '0.5.1',
+        'CFBundleVersion': '0.5.2',
+        'CFBundleShortVersionString': '0.5.2',
         'NSHighResolutionCapable': True,
         'NSRequiresAquaSystemAppearance': False,
         'LSMinimumSystemVersion': '10.13.0',

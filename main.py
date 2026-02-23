@@ -9,6 +9,14 @@ import shutil
 from youtube_transcript_api import YouTubeTranscriptApi
 
 
+def sanitize_filename(name):
+    """Replace path-unsafe characters so title can be used in file paths."""
+    unsafe = '/\\:*?"<>|\x00'
+    for c in unsafe:
+        name = name.replace(c, "-")
+    return name.strip() or "video"
+
+
 class YnotGui:
     def __init__(self, root):
         self.root = root
@@ -191,7 +199,8 @@ class YnotGui:
         ytt_api = YouTubeTranscriptApi()
         transcript = ytt_api.fetch(video_id)
         text = "\n".join([snippet.text for snippet in transcript.snippets])
-        filepath = os.path.join(home_dir, f"{title}_transcript.txt")
+        safe_title = sanitize_filename(title)
+        filepath = os.path.join(home_dir, f"{safe_title}_transcript.txt")
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(text)
         return filepath
