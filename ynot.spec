@@ -61,8 +61,8 @@ app = BUNDLE(
     info_plist={
         'CFBundleName': 'YNOT',
         'CFBundleDisplayName': 'YNOT',
-        'CFBundleVersion': '0.5.2',
-        'CFBundleShortVersionString': '0.5.2',
+        'CFBundleVersion': '0.5.3',
+        'CFBundleShortVersionString': '0.5.3',
         'NSHighResolutionCapable': True,
         'NSRequiresAquaSystemAppearance': False,
         'LSMinimumSystemVersion': '10.13.0',
