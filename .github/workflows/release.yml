@@ -83,8 +83,8 @@ jobs:
       
       - name: Install Python universal2
         run: |
-          curl -sLO https://www.python.org/ftp/python/3.11.14/python-3.11.14-macos11.pkg
-          sudo installer -pkg python-3.11.14-macos11.pkg -target /
+          curl -sLO https://www.python.org/ftp/python/3.11.9/python-3.11.9-macos11.pkg
+          sudo installer -pkg python-3.11.9-macos11.pkg -target /
           echo "/Library/Frameworks/Python.framework/Versions/3.11/bin" >> $GITHUB_PATH
           echo "PATH=/Library/Frameworks/Python.framework/Versions/3.11/bin:$PATH" >> $GITHUB_ENV
       
