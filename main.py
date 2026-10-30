@@ -1,13 +1,14 @@
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-import yt_dlp
+import json
 import os
 import re
+import shutil
 import subprocess
 import tempfile
-import shutil
-import json
+import tkinter as tk
 from pathlib import Path
+from tkinter import filedialog, messagebox, ttk
+
+import yt_dlp
 from youtube_transcript_api import YouTubeTranscriptApi
 
 CONFIG_DIR = Path.home() / ".config" / "ynot"
@@ -45,9 +46,7 @@ class YnotGui:
         self.root = root
         self.root.title("YNOT")
         self.config = load_config()
-        self.save_path = Path(
-            self.config.get("save_path", str(Path.home()))
-        ).expanduser()
+        self.save_path = Path(self.config.get("save_path", str(Path.home()))).expanduser()
 
         # Check for ffmpeg on startup
         self.check_ffmpeg()
@@ -107,9 +106,7 @@ class YnotGui:
         self.progress_label.grid(row=4, column=0, columnspan=2, pady=5)
 
         # Clickable file path label
-        self.file_link = ttk.Label(
-            self.frame, text="", foreground="blue", cursor="hand2"
-        )
+        self.file_link = ttk.Label(self.frame, text="", foreground="blue", cursor="hand2")
         self.file_link.grid(row=5, column=0, columnspan=2, pady=5)
         self.file_link.bind("<Button-1>", self.open_file_location)
         self.saved_filepath = None
@@ -125,9 +122,7 @@ class YnotGui:
         dialog.title("Settings")
         dialog.transient(self.root)
         dialog.grab_set()
-        ttk.Label(dialog, text="Save path:").grid(
-            row=0, column=0, sticky=tk.W, padx=5, pady=5
-        )
+        ttk.Label(dialog, text="Save path:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
         path_var = tk.StringVar(value=str(self.save_path))
         path_entry = ttk.Entry(dialog, textvariable=path_var, width=50)
         path_entry.grid(row=0, column=1, padx=5, pady=5)
@@ -137,28 +132,20 @@ class YnotGui:
             if d:
                 path_var.set(d)
 
-        ttk.Button(dialog, text="Browse...", command=browse).grid(
-            row=0, column=2, padx=5, pady=5
-        )
+        ttk.Button(dialog, text="Browse...", command=browse).grid(row=0, column=2, padx=5, pady=5)
 
         def save_and_close():
             p = Path(path_var.get()).expanduser()
             if not p.is_dir():
-                messagebox.showerror(
-                    "Error", f"Path does not exist or is not a directory: {p}"
-                )
+                messagebox.showerror("Error", f"Path does not exist or is not a directory: {p}")
                 return
             self.save_path = p
             self.config["save_path"] = str(p)
             save_config(self.config)
             dialog.destroy()
 
-        ttk.Button(dialog, text="Save", command=save_and_close).grid(
-            row=1, column=1, pady=10
-        )
-        dialog.geometry(
-            "+%d+%d" % (self.root.winfo_rootx() + 50, self.root.winfo_rooty() + 50)
-        )
+        ttk.Button(dialog, text="Save", command=save_and_close).grid(row=1, column=1, pady=10)
+        dialog.geometry(f"+{self.root.winfo_rootx() + 50}+{self.root.winfo_rooty() + 50}")
 
     def _get_urls_to_process(self):
         """Return list of URLs from entry. Single URL or from batch file."""
@@ -337,11 +324,7 @@ class YnotGui:
             total = len(urls)
             for i, url in enumerate(urls):
                 self.progress_label.config(
-                    text=(
-                        f"Downloading ({i + 1}/{total})..."
-                        if total > 1
-                        else "Downloading..."
-                    )
+                    text=(f"Downloading ({i + 1}/{total})..." if total > 1 else "Downloading...")
                 )
                 self.root.update()
 
@@ -375,9 +358,7 @@ class YnotGui:
                         try:
                             self.save_transcript(video_id, title)
                         except Exception as e:
-                            messagebox.showwarning(
-                                "Warning", f"Could not fetch transcript: {e}"
-                            )
+                            messagebox.showwarning("Warning", f"Could not fetch transcript: {e}")
                 last_file = filename
 
             self.saved_filepath = last_file
@@ -421,9 +402,7 @@ class YnotGui:
 
                 video_id = self.extract_video_id(url)
                 if not video_id:
-                    messagebox.showwarning(
-                        "Warning", f"Could not extract video ID: {url}"
-                    )
+                    messagebox.showwarning("Warning", f"Could not extract video ID: {url}")
                     continue
 
                 with yt_dlp.YoutubeDL({"skip_download": True, "quiet": True}) as ydl:
@@ -431,9 +410,7 @@ class YnotGui:
                     title = info.get("title", "video")
 
                 self.save_transcript(video_id, title)
-            done_msg = (
-                f"Transcripts saved ({total})" if total > 1 else "Transcript saved!"
-            )
+            done_msg = f"Transcripts saved ({total})" if total > 1 else "Transcript saved!"
             self.progress_label.config(text=done_msg)
             if total == 1:
                 self.url_entry.delete(0, tk.END)
@@ -445,7 +422,7 @@ class YnotGui:
 
 def main():
     root = tk.Tk()
-    app = YnotGui(root)
+    YnotGui(root)
     root.mainloop()
 
 
