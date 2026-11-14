@@ -11,6 +11,7 @@ from tkinter import filedialog, messagebox, ttk
 import yt_dlp
 from youtube_transcript_api import YouTubeTranscriptApi
 import time
+
 CONFIG_DIR = Path.home() / ".config" / "ynot"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 

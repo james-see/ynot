@@ -8,6 +8,7 @@
 
 ### Fixed
 - v0.7.2 release previously shipped GUI controls without the backing methods; playlist and interval logic are now implemented.
+
 ## [0.7.1] - 2026-11-13
 
 ### Fixed
