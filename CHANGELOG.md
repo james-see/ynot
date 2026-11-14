@@ -3,7 +3,7 @@
 ## [0.7.1] - 2026-11-13
 
 ### Fixed
-- Fixed "Requested format is not available" errors on modern YouTube videos by switching the download selector from `best` (single progressive file, often missing now) to a merge selector preferring mp4 streams (`bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo*+bestaudio/best`) with a `best` fallback. Downloads now get higher-quality video+audio and remain MP4 for player compatibility.
+- Fixed "Requested format is not available" errors on modern YouTube videos by switching the download selector from `best` (single progressive file, often missing now) to a merge selector preferring H.264/AAC streams (`bestvideo[vcodec^=avc1]+bestaudio[ext=m4a]/bestvideo*+bestaudio/best`) with a `best` fallback. Downloads now get higher-quality video+audio, stay MP4/H.264 for player compatibility, and match the H.264-based ffmpeg conversion pipeline.
 
 ## [0.6.3] - 2025-12-08
 

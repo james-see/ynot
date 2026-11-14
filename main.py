@@ -310,7 +310,9 @@ class YnotGui:
             # YouTube videos; merge best video+audio streams, falling back to
             # a single file only when no separate streams exist. yt-dlp raises
             # "Requested format is not available" without the /best fallback.
-            "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo*+bestaudio/best",
+            # H.264 is preferred because convert_to_proper_mp4 uses
+            # -bsf:v h264_mp4toannexb and H.264/AAC stays playable everywhere.
+            "format": "bestvideo[vcodec^=avc1]+bestaudio[ext=m4a]/bestvideo*+bestaudio/best",
             "outtmpl": os.path.join(out_dir, "%(title)s.%(ext)s"),
             "progress_hooks": [self.progress_hook],
             "postprocessors": [
