@@ -95,19 +95,36 @@ class YnotGui:
         )
         self.transcript_button.grid(row=0, column=1, padx=5)
 
+        # Playlist to TXT button
+        self.playlist_button = ttk.Button(
+            self.buttons_frame, text="Playlist to TXT", command=self.playlist_to_txt
+        )
+        self.playlist_button.grid(row=0, column=2, padx=5)
+
         # Settings button
         self.settings_button = ttk.Button(
             self.buttons_frame, text="Settings", command=self._open_settings
         )
-        self.settings_button.grid(row=0, column=2, padx=5)
+        self.settings_button.grid(row=0, column=3, padx=5)
+
+        # Interval frame (seconds between batch downloads, avoids 429 rate limits)
+        self.interval_frame = ttk.Frame(self.frame)
+        self.interval_frame.grid(row=4, column=0, columnspan=2, pady=(0, 5))
+
+        ttk.Label(self.interval_frame, text="Interval between batch items (seconds):").grid(
+            row=0, column=0, sticky=tk.W
+        )
+        self.interval_var = tk.StringVar(value="5")
+        self.interval_entry = ttk.Entry(self.interval_frame, textvariable=self.interval_var, width=5)
+        self.interval_entry.grid(row=0, column=1, sticky=tk.W, padx=5)
 
         # Progress label
         self.progress_label = ttk.Label(self.frame, text="")
-        self.progress_label.grid(row=4, column=0, columnspan=2, pady=5)
+        self.progress_label.grid(row=5, column=0, columnspan=2, pady=5)
 
         # Clickable file path label
         self.file_link = ttk.Label(self.frame, text="", foreground="blue", cursor="hand2")
-        self.file_link.grid(row=5, column=0, columnspan=2, pady=5)
+        self.file_link.grid(row=6, column=0, columnspan=2, pady=5)
         self.file_link.bind("<Button-1>", self.open_file_location)
         self.saved_filepath = None
 
