@@ -10,7 +10,7 @@ from tkinter import filedialog, messagebox, ttk
 
 import yt_dlp
 from youtube_transcript_api import YouTubeTranscriptApi
-
+import time
 CONFIG_DIR = Path.home() / ".config" / "ynot"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
@@ -163,7 +163,48 @@ class YnotGui:
 
         ttk.Button(dialog, text="Save", command=save_and_close).grid(row=1, column=1, pady=10)
         dialog.geometry(f"+{self.root.winfo_rootx() + 50}+{self.root.winfo_rooty() + 50}")
+    def _get_interval(self):
+        """Parse interval entry, default 5 seconds, clamp to ≥0."""
+        try:
+            val = float(self.interval_var.get())
+            return max(val, 0.0)
+        except Exception:
+            return 5.0
 
+    def playlist_to_txt(self):
+        """Dump flat playlist URLs to a .txt file (one per line)."""
+        url = self.url_entry.get().strip()
+        if not url:
+            messagebox.showerror("Error", "Enter a playlist URL first.")
+            return
+        try:
+            ydl_opts = {"quiet": True, "extract_flat": True, "skip_download": True}
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+            urls = []
+            for entry in info.get("entries") or []:
+                if not entry:
+                    continue
+                vid = entry.get("id")
+                if vid:
+                    urls.append(f"https://www.youtube.com/watch?v={vid}")
+                elif entry.get("url") or entry.get("webpage_url"):
+                    urls.append(entry.get("url") or entry.get("webpage_url"))
+            if not urls:
+                messagebox.showinfo("Info", "No video URLs found in playlist.")
+                return
+            save_path = filedialog.asksaveasfilename(
+                defaultextension=".txt",
+                filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+                title="Save playlist URLs",
+            )
+            if not save_path:
+                return
+            with open(save_path, "w", encoding="utf-8") as f:
+                f.write("\n".join(urls) + "\n")
+            messagebox.showinfo("Success", f"Saved {len(urls)} URLs to {save_path}")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
     def _get_urls_to_process(self):
         """Return list of URLs from entry. Single URL or from batch file."""
         raw = self.url_entry.get().strip()
@@ -383,6 +424,8 @@ class YnotGui:
                         except Exception as e:
                             messagebox.showwarning("Warning", f"Could not fetch transcript: {e}")
                 last_file = filename
+                if self.batch_mode_var.get() and i < total - 1:
+                    time.sleep(self._get_interval())
 
             self.saved_filepath = last_file
             done_msg = f"Saved {total} file(s)" if total > 1 else "Download complete!"
@@ -433,6 +476,8 @@ class YnotGui:
                     title = info.get("title", "video")
 
                 self.save_transcript(video_id, title)
+                if self.batch_mode_var.get() and i < total - 1:
+                    time.sleep(self._get_interval())
             done_msg = f"Transcripts saved ({total})" if total > 1 else "Transcript saved!"
             self.progress_label.config(text=done_msg)
             if total == 1:

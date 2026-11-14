@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.2] - 2026-11-13
+
+### Added
+- Playlist to TXT: dump flat playlist video URLs to a text file (yt-dlp API; works in bundled app).
+- Batch interval: seconds between items in batch download/transcript mode to reduce rate-limit errors.
+
+### Fixed
+- v0.7.2 release previously shipped GUI controls without the backing methods; playlist and interval logic are now implemented.
 ## [0.7.1] - 2026-11-13
 
 ### Fixed
