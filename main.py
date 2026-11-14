@@ -164,6 +164,7 @@ class YnotGui:
 
         ttk.Button(dialog, text="Save", command=save_and_close).grid(row=1, column=1, pady=10)
         dialog.geometry(f"+{self.root.winfo_rootx() + 50}+{self.root.winfo_rooty() + 50}")
+
     def _get_interval(self):
         """Parse interval entry, default 5 seconds, clamp to ≥0."""
         try:
@@ -182,6 +183,12 @@ class YnotGui:
             ydl_opts = {"quiet": True, "extract_flat": True, "skip_download": True}
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
+            if info.get("_type") != "playlist":
+                messagebox.showwarning(
+                    "Not a playlist",
+                    "That URL is a single video, not a playlist. Use a playlist link (list=… in the URL).",
+                )
+                return
             urls = []
             for entry in info.get("entries") or []:
                 if not entry:
@@ -206,6 +213,7 @@ class YnotGui:
             messagebox.showinfo("Success", f"Saved {len(urls)} URLs to {save_path}")
         except Exception as e:
             messagebox.showerror("Error", str(e))
+
     def _get_urls_to_process(self):
         """Return list of URLs from entry. Single URL or from batch file."""
         raw = self.url_entry.get().strip()
